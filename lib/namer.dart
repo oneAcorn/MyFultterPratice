@@ -57,41 +57,60 @@ class NamerHomePage extends StatefulWidget {
 }
 
 class _NamerHomePageState extends State<NamerHomePage> {
-  var selectIndex = 0;
+  var selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Scaffold(
-      body: Row(
-        children: [
-          SafeArea(
-            child: NavigationRail(
-              extended: true,
-              destinations: [
-                NavigationRailDestination(
-                  icon: Icon(Icons.home),
-                  label: Text('Home'),
+    Widget page;
+    switch (selectedIndex) {
+      case 0:
+        page = NameGeneratorPage();
+        break;
+      case 1:
+        page = FavoritesPage();
+        break;
+      default:
+        throw UnimplementedError('no widget for $selectedIndex');
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Scaffold(
+          body: Row(
+            children: [
+              SafeArea(
+                child: NavigationRail(
+                  //根据屏幕宽度自动决定是否拓展左侧导航栏
+                  extended: constraints.maxWidth >= 600,
+                  destinations: [
+                    NavigationRailDestination(
+                      icon: Icon(Icons.home),
+                      label: Text('Home'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.favorite),
+                      label: Text('Favorite'),
+                    ),
+                  ],
+                  selectedIndex: selectedIndex,
+                  onDestinationSelected: (value) {
+                    setState(() {
+                      selectedIndex = value;
+                    });
+                  },
                 ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.favorite),
-                  label: Text('Favorite'),
+              ),
+              Expanded(
+                child: Container(
+                  color: theme.colorScheme.primaryContainer,
+                  child: page,
                 ),
-              ],
-              selectedIndex: 0,
-              onDestinationSelected: (value) {
-                Logger.log('onDestinationSelected:$value');
-              },
-            ),
+              ),
+            ],
           ),
-          Expanded(
-            child: Container(
-              color: theme.colorScheme.primaryContainer,
-              child: NameGeneratorPage(),
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -135,6 +154,28 @@ class NameGeneratorPage extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class FavoritesPage extends StatelessWidget {
+  const FavoritesPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    var appState = context.watch<NamerState>();
+    var favorites = appState.favorites;
+    if (favorites.isEmpty) {
+      return Center(child: Text('No Favorites yet..'),);
+    }
+    return ListView(
+      children: [
+        Padding(padding: const EdgeInsets.all(20),
+          child: Text('You have ${favorites.length} favorites:'),),
+        for(var pair in favorites)
+          ListTile(
+            leading: Icon(Icons.favorite), title: Text(pair.asLowerCase),)
+      ],
     );
   }
 }
