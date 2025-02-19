@@ -6,11 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 void main() {
-  runApp(NamerApp());
+  runApp(NamerAppAdvanced());
 }
 
-class NamerApp extends StatelessWidget {
-  const NamerApp({super.key});
+class NamerAppAdvanced extends StatelessWidget {
+  const NamerAppAdvanced({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -53,6 +53,11 @@ class NamerState extends ChangeNotifier {
 
   bool isFavorite({WordPair? pair}) {
     return favorites.contains(pair ?? current);
+  }
+
+  void removeFavorite(WordPair pair) {
+    favorites.remove(pair);
+    notifyListeners();
   }
 }
 
@@ -116,6 +121,12 @@ class _NamerHomePageState extends State<NamerHomePage> {
               ),
             ],
           ),
+          floatingActionButton: ElevatedButton(
+            onPressed: () {
+              Navigator.of(context, rootNavigator: true).pop(context);
+            },
+            child: Text('Back to namer'),
+          ),
         );
       },
     );
@@ -171,22 +182,43 @@ class FavoritesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     var appState = context.watch<NamerState>();
     var favorites = appState.favorites;
     if (favorites.isEmpty) {
       return Center(child: Text('No Favorites yet..'));
     }
-    return ListView(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.all(20),
           child: Text('You have ${favorites.length} favorites:'),
         ),
-        for (var pair in favorites)
-          ListTile(
-            leading: Icon(Icons.favorite),
-            title: Text(pair.asLowerCase),
+        Expanded(
+          child: GridView(
+            gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 400,
+              childAspectRatio: 400 / 80,
+            ),
+            children: [
+              for (var pair in appState.favorites)
+                ListTile(
+                  leading: IconButton(
+                    onPressed: () {
+                      appState.removeFavorite(pair);
+                    },
+                    icon: Icon(Icons.delete_outline, semanticLabel: 'Delete'),
+                    color: theme.colorScheme.primary,
+                  ),
+                  title: Text(
+                    pair.asLowerCase,
+                    semanticsLabel: pair.asPascalCase,
+                  ),
+                ),
+            ],
           ),
+        ),
       ],
     );
   }
@@ -207,7 +239,27 @@ class BigCard extends StatelessWidget {
       color: theme.primaryColor,
       child: Padding(
         padding: const EdgeInsets.all(20),
-        child: Text(pair.asLowerCase, style: style),
+        child: AnimatedSize(
+          duration: Duration(milliseconds: 200),
+          // Make sure that the compound word wraps correctly when the window
+          // is too narrow.
+          child: MergeSemantics(
+            //Wrap为行内布局组件，它的核心作用是让子组件可以根据空间大小换行排列。
+            //Wrap会自动测量可用空间，如果子组件的宽度超过可用空间，它就会自动换行。
+            child: Wrap(
+              children: [
+                Text(
+                  pair.first,
+                  style: style?.copyWith(fontWeight: FontWeight.w200),
+                ),
+                Text(
+                  pair.second,
+                  style: style?.copyWith(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
     Text(pair.asLowerCase);

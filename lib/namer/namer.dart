@@ -1,3 +1,4 @@
+import 'package:demo2025/namer/namer_advanced.dart';
 import 'package:demo2025/utils/logger.dart';
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
@@ -109,6 +110,11 @@ class _NamerHomePageState extends State<NamerHomePage> {
               ),
             ],
           ),
+          floatingActionButton: ElevatedButton(onPressed: (){
+            Navigator.push(context, MaterialPageRoute(builder: (context){
+              return NamerAppAdvanced();
+            }));
+          }, child: Text('Go to Advanced page')),
         );
       },
     );
