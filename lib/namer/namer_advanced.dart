@@ -89,6 +89,7 @@ class _NamerHomePageState extends State<NamerHomePage> {
     return LayoutBuilder(
       builder: (context, constraints) {
         return Scaffold(
+          appBar: AppBar(title: const Text('Namer',),),
           body: Row(
             children: [
               SafeArea(
